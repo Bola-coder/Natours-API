@@ -10,35 +10,30 @@ exports.aliasTours = (req, res, next) => {
 };
 
 const catchAsync = (fn) => {
-  fn(req, res, next).catch((err) => next(err));
+  return (req, res, next) => {
+    fn(req, res, next).catch(next);
+  };
 };
 
-exports.getAllTours = async (req, res) => {
-  try {
-    // EXECUTE QUERY
-    const features = new APIFeatures(Tour.find(), req.query)
-      .filtering()
-      .sorting()
-      .limitFields()
-      .pagination();
-    const tours = await features.query;
+exports.getAllTours = catchAsync(async (req, res) => {
+     // EXECUTE QUERY
+     const features = new APIFeatures(Tour.find(), req.query)
+     .filtering()
+     .sorting()
+     .limitFields()
+     .pagination();
+   const tours = await features.query;
 
-    // SEND RESULTS
-    res.status(200).json({
-      status: 'success',
-      requestedAt: req.requestTime,
-      result: tours.length,
-      data: {
-        tours,
-      },
-    });
-  } catch (err) {
-    res.status(404).json({
-      status: 'Fail',
-      message: err,
-    });
-  }
-};
+   // SEND RESULTS
+   res.status(200).json({
+     status: 'success',
+     requestedAt: req.requestTime,
+     result: tours.length,
+     data: {
+       tours,
+     },
+   });
+});
 
 exports.getTour = async (req, res) => {
   try {
