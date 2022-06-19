@@ -4,7 +4,8 @@
   "description": "Learning nodejs, mongodb and express with Jonas course",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "prod": "set NODE_ENV=production && nodemon server.js"
   },
   "author": "Ahmed Bolarinwa",
   "license": "ISC",
