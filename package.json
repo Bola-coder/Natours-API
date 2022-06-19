@@ -4,12 +4,13 @@
   "description": "Learning nodejs, mongodb and express with Jonas course",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "prod": "set NODE_ENV=production && nodemon server.js"
+    "start": "cross-env NODE_ENV=development nodemon server.js",
+    "prod": "cross-env NODE_ENV=production nodemon server.js"
   },
   "author": "Ahmed Bolarinwa",
   "license": "ISC",
   "dependencies": {
+    "cross-env": "^7.0.3",
     "dotenv": "^10.0.0",
     "express": "^4.16.4",
     "mongoose": "^6.0.12",
