@@ -6,9 +6,15 @@ const handleCastErrorDB = (err) => {
 };
 
 const handleDuplicateValueErrorDB = (err) => {
-  // const dupValue = Object.keys(err.keyValue)[0];
-  // console.log(dupValue);
-  const message = `Field exists.`;
+  const dupValue = Object.values(err.keyValue)[0];
+  console.log(dupValue);
+  const message = `Tour with name "${dupValue}"  exist already`;
+  return new AppError(message, 400);
+};
+
+const handleValidationErrorDB = (err) => {
+  const errors = Object.values(err.errors).map((ele) => ele.message);
+  const message = `Invalid Input Data: ${errors.join('. ')}`;
   return new AppError(message, 400);
 };
 
@@ -54,13 +60,16 @@ module.exports = (err, req, res, next) => {
 
   // Error in production mode
   else if (process.env.NODE_ENV === 'production') {
-    let error = { ...err };
-    // console.log('An error occurred', err);
-    if ((error.code = 11000)) {
+    // let error = { ...err };
+    let error = JSON.parse(JSON.stringify(err));
+    if (error.name == 'CastError') {
+      error = handleCastErrorDB(error);
+    }
+    if (error.code == 11000) {
       error = handleDuplicateValueErrorDB(error);
     }
-    if ((error.name = 'CastError')) {
-      error = handleCastErrorDB(error);
+    if (error.name === 'ValidationError') {
+      error = handleValidationErrorDB(error);
     }
     sendErrorProd(error, res);
   }
