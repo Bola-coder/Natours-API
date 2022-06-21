@@ -10,9 +10,11 @@
   "author": "Ahmed Bolarinwa",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cross-env": "^7.0.3",
     "dotenv": "^10.0.0",
     "express": "^4.16.4",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.12",
     "morgan": "^1.10.0",
     "slugify": "^1.6.3",
