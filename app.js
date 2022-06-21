@@ -16,6 +16,7 @@ app.use(express.static(`${__dirname}/public`)); // Used to serve static files
 // Another custom middleware that modifies the request
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  // console.log(req.headers);
   next();
 });
 
