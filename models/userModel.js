@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
@@ -42,12 +43,14 @@ const userSchema = new mongoose.Schema({
     },
   },
   passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetTokenExpires: Date,
 });
 
 userSchema.pre('save', async function (next) {
   // Only run the function if password has been modified
   if (!this.isModified('password')) return next();
-  //   Hash the passoerd with cosr of 12
+  //   Hash the password with cosr of 12
   this.password = await bcrypt.hash(this.password, 12);
   //   Delete the passwordConfrim field
   this.passwordConfirm = undefined;
@@ -71,6 +74,17 @@ userSchema.methods.changedPasswordAfter = async function (JWTTimestamp) {
     return JWTTimestamp < changedTimestamp;
   }
   return false;
+};
+
+// Methods to generate password reset tokens
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  this.passwordResetTokenExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);

@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const sendEmail = require('./../utils/email');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -106,3 +107,51 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // Get user based on email address.
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(
+      new AppError("User with this email address doesn't exist", 404)
+    );
+  }
+  // Geberate token for user
+
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  // Send token to user mail
+  const resetUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/resetPassword/${resetToken}`;
+
+  const message = `Find below your password reset link. Click ${resetUrl}  to reset your password. If you didn't initiate this action, kindly ignore this email.`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Reset Password Link (valid for 10mins)',
+      message,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Reset token has been successfully sent',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetTokenExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    console.log(err);
+
+    return next(
+      new AppError(
+        'There was an error sending the email. Please try again',
+        500
+      )
+    );
+  }
+});
+
+exports.resetPassword = (req, res, next) => {};
