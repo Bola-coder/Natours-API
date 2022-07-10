@@ -72,7 +72,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // 2. Verification of token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  console.log(decoded);
+  // console.log(decoded);
 
   // 3. Check if user still exist
   const id = decoded.id;
@@ -174,10 +174,31 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;
   user.passwordResetTokenExpires = undefined;
-  user.passwordChangedAt = Date.now();
   await user.save();
 
   // 4. Log user in. Send JWT.
+  const token = signToken(user._id);
+  res.status(200).json({
+    ststus: 'success',
+    token,
+  });
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // 1. Get current user from collection
+  const user = await User.findById(req.user.id).select('+password');
+
+  // 2. Check if posted password is correct
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    return next(new AppError('Wrong current password'));
+  }
+
+  // 3. If 2, Update the password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+
+  // 4. Log user in, send jwt.
   const token = signToken(user._id);
   res.status(200).json({
     ststus: 'success',

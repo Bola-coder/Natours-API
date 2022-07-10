@@ -15,11 +15,11 @@ router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 router
   .route('/')
   .get(authController.protect, tourController.getAllTours)
-  .post(tourController.createNewTour);
+  .post(authController.protect, tourController.createNewTour);
 router
   .route('/:id')
-  .get(tourController.getTour)
-  .patch(tourController.updateTour)
-  .delete(tourController.deleteTour);
+  .get(authController.protect, tourController.getTour)
+  .patch(authController.protect, tourController.updateTour)
+  .delete(authController.protect, tourController.deleteTour);
 
 module.exports = router;

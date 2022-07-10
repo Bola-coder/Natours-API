@@ -57,6 +57,13 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || this.isNew) {
+    return next();
+  }
+  this.passwordChangedAt = Date.now() - 2000;
+});
+
 // Creating an instance method.
 userSchema.methods.correctPassword = async function (
   candidatePassword,
