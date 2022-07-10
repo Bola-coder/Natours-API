@@ -45,6 +45,11 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetTokenExpires: Date,
+  active: {
+    type: Boolean,
+    defualt: true,
+    select: false,
+  },
 });
 
 userSchema.pre('save', async function (next) {
@@ -62,6 +67,14 @@ userSchema.pre('save', async function (next) {
     return next();
   }
   this.passwordChangedAt = Date.now() - 2000;
+});
+
+// Creating a query middleware to only select active users
+userSchema.pre(/^find/, function (next) {
+  // this points to the current query.
+  this.find({ active: { $ne: false } });
+
+  next();
 });
 
 // Creating an instance method.
